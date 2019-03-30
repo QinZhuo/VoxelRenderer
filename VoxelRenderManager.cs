@@ -6,30 +6,30 @@ using UnityEngine;
 namespace VoxelRender
 {
 public class VoxelRenderManager{
-	public static float GridSize=1;
+	
 	public static VoxelData GetData(){
 		VoxelData voxel= new VoxelData();
 		return voxel;
 	}
-	public static Vector3 Fixed(Vector3 position){
+	public static Vector3 Fixed(Vector3 position,float GridSize){
 		var newPos=new Vector3(
-			Fixed(position.x),
-			Fixed(position.y),
-			Fixed(position.z)
+			Fixed(position.x,GridSize),
+			Fixed(position.y,GridSize),
+			Fixed(position.z,GridSize)
 		);
 		return newPos;
 	}
-	public static float Fixed(float value){
+	public static float Fixed(float value,float GridSize){
 		var fixeScale=(value)%GridSize;
 		if(Mathf.Abs(fixeScale)<GridSize/2){
 			return value-fixeScale;
 		}else
 		{
-			return value+FixedInvert(fixeScale);
+			return value+FixedInvert(fixeScale,GridSize);
 		}
 		
 	}
-	public static float FixedInvert(float value){
+	public static float FixedInvert(float value,float GridSize){
 		if(value>=0){
 			return GridSize-value;
 		}else

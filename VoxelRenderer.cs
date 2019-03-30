@@ -7,16 +7,17 @@ namespace VoxelRender
 {
 	
 public class VoxelRenderer : MonoBehaviour {
-	
-	public Transform boneR;
+
+	public Transform boneRoot;
 	public Transform renderRoot;
 
 	public Transform[] voxels;
 	public Vector3[] bindPose;
 	public int[] bindIndex;
-	public Transform[] bones;
-
-	public float[] boneCircle;
+	public List<Transform> bones;
+	public float GridSize=1;
+	public float minBoneLen=0.15f;
+	public List<float> boneCircle;
 	public Material material;
     public VoxelData voxelData;
 	public bool _showWeight;
@@ -39,8 +40,8 @@ public class VoxelRenderer : MonoBehaviour {
 			{
 				
 				var boneIndex=bindIndex[i];
-				Gizmos.color=Color.HSVToRGB(boneIndex*1f/ bones.Length,0.7f,1);
-				Gizmos.DrawCube(voxels[i].position,Vector3.one*VoxelRenderManager.GridSize);
+				Gizmos.color=Color.HSVToRGB(boneIndex*1f/ bones.Count,0.7f,1);
+				Gizmos.DrawCube(voxels[i].position,Vector3.one*GridSize);
 			}
 		}
 	}
@@ -56,7 +57,7 @@ public class VoxelRenderer : MonoBehaviour {
 		voxels=new Transform[voxelData.voxels.Count];
 		foreach (var v in voxelData.voxels)
 		{
-			voxels[i]=VoxelRenderManager.CreateViewObj(voxelData,material,v,VoxelRenderManager.GridSize,renderRoot).transform;
+			voxels[i]=VoxelRenderManager.CreateViewObj(voxelData,material,v,GridSize,renderRoot).transform;
 			i++;
 		}	
 	}
@@ -111,22 +112,51 @@ public class VoxelRenderer : MonoBehaviour {
 		}
 		return bindPose;
 	}
+
+	public void GetBones(){
+		bones=GetBones(boneRoot);
+		boneCircle=new List<float>();
+		for (int i = 0; i < bones.Count; i++)
+		{
+			boneCircle.Add(0);
+		}
+	}
+	 List<Transform> GetBones(Transform bondRoot){
+		List<Transform> bs=new List<Transform>();
+		if(bondRoot==null)return null;
+		bs.Add(bondRoot);
+		for (int i = 0; i < bondRoot.childCount; i++)
+		{
+			var childRoot= bondRoot.GetChild(i);
+			if(bondRoot.childCount>3){
+				if(Vector3.Distance(childRoot.position,bondRoot.position)<minBoneLen){
+					continue;
+				}
+			}
+			bs.AddRange(GetBones(childRoot));
+		}
+		return bs;
+	}
 	[ContextMenu("bind")]
 	public void Bind(){
-		bones=boneR.GetComponentsInChildren<Transform>();
+		
 		bindIndex=new int[voxels.Length];
 		List<Transform> voxelList=new List<Transform>();
 		voxelList.AddRange(voxels);
 		for (int i = 0; i < voxelList.Count; i++)
 		{
+			var voxel=voxelList[i];
 			float minDis=float.MaxValue;
 			bindIndex[i]=0;
-			for (int j = 0; j < bones.Length; j++)
+			for (int j = 0; j < bones.Count; j++)
 			{
-				if(minDis>Vector3.Distance(bones[j].position,voxelList[i].position)){
-					minDis=Vector3.Distance(bones[j].position,voxelList[i].position);
-					bindIndex[i]=j;
-				
+				var bone=bones[j];
+				if(Vector3.Angle (bone.forward,voxel.position-bone.position)<90){
+					if(minDis>Vector3.Distance(bones[j].position,voxelList[i].position)){
+						minDis=Vector3.Distance(bones[j].position,voxelList[i].position);
+						bindIndex[i]=j;
+					
+					}
 				}
 			}
 		}
@@ -139,12 +169,12 @@ public class VoxelRenderer : MonoBehaviour {
 	
 	public void RenderVoxel(Transform voxel,Transform bone,Vector3 bindPose){
 		voxel.transform.rotation=Quaternion.identity;
-		voxel.transform.position=VoxelRenderManager.Fixed(bone.transform.position-( bone.right*bindPose.x+bone.forward*bindPose.z+bone.up*bindPose.y));
+		voxel.transform.position=VoxelRenderManager.Fixed(bone.transform.position-( bone.right*bindPose.x+bone.forward*bindPose.z+bone.up*bindPose.y),GridSize);
 	}
 
 	 private void LateUpdate() {
-		if(voxels!=null&&boneR!=null&&bindPose!=null){
-			for (int i = 0; i < voxels.Length; i++)
+		if(voxels!=null&&boneRoot!=null&&bindPose!=null){
+			for (int i = 0; i < bindPose.Length; i++)
 			{
 				RenderVoxel(voxels[i].transform,bones[bindIndex[i]],bindPose[i]);
 			}
