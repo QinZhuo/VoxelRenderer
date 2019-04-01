@@ -15,9 +15,9 @@ public class VoxelRenderer : MonoBehaviour {
 	public Vector3[] bindPose;
 	public int[] bindIndex;
 	public List<Transform> bones;
-	public float GridSize=1;
+	public float GridSize=0.05f;
 	public float minBoneLen=0.15f;
-	public List<float> boneCircle;
+
 	public Material material;
     public VoxelData voxelData;
 	public bool _showWeight;
@@ -115,11 +115,6 @@ public class VoxelRenderer : MonoBehaviour {
 
 	public void GetBones(){
 		bones=GetBones(boneRoot);
-		boneCircle=new List<float>();
-		for (int i = 0; i < bones.Count; i++)
-		{
-			boneCircle.Add(0);
-		}
 	}
 	 List<Transform> GetBones(Transform bondRoot){
 		List<Transform> bs=new List<Transform>();
@@ -151,13 +146,13 @@ public class VoxelRenderer : MonoBehaviour {
 			for (int j = 0; j < bones.Count; j++)
 			{
 				var bone=bones[j];
-				if(Vector3.Angle (bone.forward,voxel.position-bone.position)<90){
+				//if(Vector3.Angle (bone.forward,voxel.position-bone.position)<90){
 					if(minDis>Vector3.Distance(bones[j].position,voxelList[i].position)){
 						minDis=Vector3.Distance(bones[j].position,voxelList[i].position);
 						bindIndex[i]=j;
 					
 					}
-				}
+				//}
 			}
 		}
 		

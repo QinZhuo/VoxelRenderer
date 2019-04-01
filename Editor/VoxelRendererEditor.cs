@@ -89,7 +89,7 @@ public class VoxelRendererEditor : Editor{
 			
 			Handles.color=Color.HSVToRGB(i*1f/ renderer.bones.Count,0.7f,1);
 			var bone=renderer.bones[i];
-			renderer.boneCircle[i]=Handles.RadiusHandle(Quaternion.identity,bone.position,renderer.boneCircle[i]!=0?renderer.boneCircle[i]:defaultBoneCircle);
+			Handles.RadiusHandle(Quaternion.identity,bone.position,defaultBoneCircle);
 			
 		}
 	
