@@ -79,7 +79,7 @@ public class VoxelRendererEditor : Editor{
 	
 
 	void DrawBoneCircle(){
-		
+		if(renderer.bones==null)return;
 		for (int i = 0; i < renderer.bones.Count; i++)
 		{
 			if(renderer.bones.Contains(renderer.bones[i].parent)){
